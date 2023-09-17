@@ -1,0 +1,25 @@
+name: Daily Python Script - Automate get data from website muasamcong
+
+on:
+  schedule:
+    - cron: "0 0,5,10,16 * * *"  # Run at 7:00 AM, 12:00 PM (noon), and 5:00 PM in Vietnam (ICT) timezone
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8  # Change Python version if needed
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt  # If you have a requirements.txt file
+
+    - name: Run Python script
+      run: python .github/workflows/bot_qldt_GetUpdate.py  # Replace with the name and path of your Python script
