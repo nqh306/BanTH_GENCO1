@@ -1,8 +1,8 @@
-name: Daily Python Script - Automate get data from website muasamcong
+name: Daily Python Script - Automate get data from muasamcong
 
 on:
   schedule:
-    - cron: "0 0,5,10,16 * * *"  # Run at 7:00 AM, 12:00 PM (noon), and 5:00 PM in Vietnam (ICT) timezone
+    - cron: "0 0 * * *"  # Run at 7:00 AM, 12:00 PM (noon), and 5:00 PM in Vietnam (ICT) timezone
 
 jobs:
   run:
