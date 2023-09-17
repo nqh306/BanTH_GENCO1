@@ -1513,10 +1513,6 @@ def main():
         else:
             print(f"Upload failed. Error message: {message}")
     
-    #send message to telegram
-    for i in range(len(df_telegram)):
-        send_telegram(df_telegram["TextMessage"][i])
-    
     # Record the end time
     end_time = time.time()
     # Calculate the elapsed time in seconds
