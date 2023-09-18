@@ -12,7 +12,6 @@ import math
 import numpy as np
 import asyncio
 import os
-import ssl
 
 # Record the start time
 start_time = time.time()
@@ -319,13 +318,11 @@ def get_values_from_2_columns_with_condition(token, spreadsheet_id, worksheet_na
 
 def fetch_data_from_api(url, payload, headers):
     try:
-        response = requests.post(url, headers=headers, data=payload, timeout=30, verify=True, tls_version=ssl.PROTOCOL_TLSv1_2)
+        response = requests.post(url, headers=headers, data=payload, timeout=30, verify=True)
         response.raise_for_status()
         return json.loads(response.text)
-    except requests.exceptions.RequestException as e:
-        raise APIRequestError("Error fetching data: " + str(e))
-    except json.JSONDecodeError as e:
-        raise JSONDecodeError("Error decoding JSON: " + str(e))
+    except requests.exceptions.SSLError as e:
+        print(f"SSL Error: {e}")
 
 def process_get_chitiet_KHLCNT_GOITHAU(id_KHLCNT):
     try:
