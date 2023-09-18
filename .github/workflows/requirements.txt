@@ -1,10 +1,5 @@
 requests
-json
 pandas
-datetime
-calendar
-urllib3
 gspread
 oauth2client
 python-telegram-bot
-numpy
