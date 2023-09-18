@@ -15,20 +15,7 @@ import asyncio
 # Record the start time
 start_time = time.time()
 #Disable notification of warning can't verify when send request
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) 
-
-async def source_send_telegram(textMessage):
-    import telegram
-    try:
-        token = '6422892988:AAGUP63bMTfcP6NXZJ49-CxKU66kN6R1_-0'
-        chat_id = '-1001940344495'
-        telegram_notify = telegram.Bot(token=token)
-        await telegram_notify.send_message(chat_id= chat_id, text= textMessage, parse_mode='Markdown')
-    except Exception as ex:
-        print(ex)
-
-def send_telegram(textMessage):
-    asyncio.run(source_send_telegram(textMessage))
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # Define Mappings and Constants Here
 MAPPING_STATUS_TBMT = {
