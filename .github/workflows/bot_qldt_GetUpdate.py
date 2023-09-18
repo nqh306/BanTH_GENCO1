@@ -17,6 +17,7 @@ import os
 start_time = time.time()
 #Disable notification of warning can't verify when send request
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) 
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += '@SECLEVEL=1'
 
 async def source_send_telegram(textMessage):
     import telegram
