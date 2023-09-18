@@ -11,6 +11,7 @@ from gspread.exceptions import APIError
 import math
 import numpy as np
 import asyncio
+import os
 
 # Record the start time
 start_time = time.time()
@@ -170,7 +171,11 @@ API_HEADER = {
 #"vn5701662152 AND vnz000009825 AND vnz000005052 AND vnz000017073 AND vnz000005091 AND vnz000023752 AND vnz000013297 AND vnz000023738 AND vnz000016981 AND vn5800452036 AND vn5700434869 AND vn0101264520 AND vn0102379203"
 payload_ds_KHLCNT = json.dumps([{ "pageSize": 10000,"pageNumber": 0,"query": [{"index": "es-contractor-selection","keyWord":"vn5701662152 AND vnz000009825 AND vnz000005052 AND vnz000017073 AND vnz000005091 AND vnz000023752 AND vnz000013297 AND vnz000023738 AND vnz000016981 AND vn5800452036 AND vn5700434869 AND vn0101264520 AND vn0102379203",
                                             "matchType": "all-1","matchFields": ["planNo","name","investorName","procuringEntityName"],"filters": [{"fieldName": "type","searchType": "in","fieldValues": ["es-plan-project-p"]}]}]}])
-token_QLDT_GoogleSheet = "token-qldt.json"
+token_QLDT_GoogleSheet = os.environ.get("TOKEN_GOOGLE_SHEET_QLDT")
+if not token_QLDT_GoogleSheet:
+    raise RuntimeError("TOKEN_GOOGLE_SHEET_QLDT not found")
+else:
+    print("TOKEN_GOOGLE_SHEET_QLDT has been installed")
 spreadsheetID_QLDT = "1lfkxn5sPh1lqTmyvUe3jSyXNXu2ZG0CSiMEuyId6TaE"
 
 #FUNCTION TO UPLOAD DATAFRAME TO GOOGLESHEET
