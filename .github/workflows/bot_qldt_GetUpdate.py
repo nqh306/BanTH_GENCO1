@@ -338,7 +338,7 @@ def get_values_from_2_columns_with_condition(token, spreadsheet_id, worksheet_na
 
 def fetch_data_from_api(url, payload, headers):
     try:
-        response = requests.post(url, headers=headers, data=payload, verify=False,timeout=30)
+        response = requests.post(url, headers=headers, data=payload, timeout=30, verify=True, tls_version=ssl.PROTOCOL_TLSv1_2)
         response.raise_for_status()
         return json.loads(response.text)
     except requests.exceptions.RequestException as e:
