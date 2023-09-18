@@ -244,26 +244,6 @@ class APIRequestError(Exception):
 class JSONDecodeError(Exception):
     pass
 
-def extract_dataframe_to_Excel(dataframe, file_name_excel, sheet_excel, icluded_header):
-    import xlwings as xw
-    if icluded_header == False:
-        # change first row to header
-        dataframe = dataframe.rename(columns=dataframe.iloc[0])
-        # drop first row
-        dataframe.drop(index=dataframe.index[0], axis=0, inplace=True)
-    sheet_df_mapping = {sheet_excel: dataframe}
-    with xw.App(visible=False) as app:
-        wb = app.books.open(file_name_excel)
-        current_sheets = [sheet.name for sheet in wb.sheets]
-        for sheet_name in sheet_df_mapping.keys():
-            if sheet_name in current_sheets:
-                wb.sheets(sheet_name).range('A1').value = sheet_df_mapping.get(sheet_name)
-            else:
-                new_sheet = wb.sheets.add(after=wb.sheets.count)
-                new_sheet.range('A1').value = sheet_df_mapping.get(sheet_name)
-                new_sheet.name = sheet_name
-        wb.save()
-
 def get_listValue_from_col_in_GoogleSheet(token, spreadsheet_id, worksheet_name, column_number):
     try:
         # Define the scope of access (in this case, just Google Sheets)
@@ -1447,22 +1427,6 @@ def main():
                     }
 
                     df_GOITHAU_ct = pd.concat([df_GOITHAU_ct,pd.DataFrame(data_newRow, index=[0])], ignore_index=True)
-    
-    #EXPORT TO EXCEL    
-    writer = pd.ExcelWriter("output.xlsx")
-    df_telegram.to_excel(writer, sheet_name='TELEGRAM', index=False)
-    df_ct_khlcnt.to_excel(writer, sheet_name='KHLCNT', index=False)
-    df_GOITHAU.to_excel(writer, sheet_name='GOITHAU', index=False)
-    df_GOITHAU_ct.to_excel(writer, sheet_name='GOITHAU_CHITIET', index=False)
-    df_GIAHAN.to_excel(writer, sheet_name='GIAHAN', index=False)
-    df_lamro.to_excel(writer, sheet_name='LAMRO', index=False)
-    df_kiennghi.to_excel(writer, sheet_name='KIENNGHI', index=False)
-    df_mothau.to_excel(writer, sheet_name='BIENBAN_MOTHAU', index=False)
-    df_DXKT.to_excel(writer, sheet_name='HSDXKT', index=False)
-    df_DXTC.to_excel(writer, sheet_name='HSDXTC', index=False)
-    df_KQLCNT.to_excel(writer, sheet_name='KQLCNT', index=False)
-    df_HANGHOA.to_excel(writer, sheet_name='DANHMUC_HANGHOA', index=False)
-    writer.close()
     
     # Record the end time
     end_time = time.time()
