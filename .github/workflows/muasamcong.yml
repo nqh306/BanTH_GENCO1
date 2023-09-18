@@ -17,4 +17,6 @@ jobs:
         pip install -r .github/workflows/requirements.txt  # If you have a requirements.txt file
 
     - name: Run Python script
+      env:
+        TOKEN_GOOGLE_SHEET_QLDT: ${{ secrets.TOKEN_GOOGLE_SHEET_QLDT }}
       run: python .github/workflows/bot_qldt_GetUpdate.py  # Replace with the name and path of your Python script
