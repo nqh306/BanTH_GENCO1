@@ -14,7 +14,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install -r requirements.txt  # If you have a requirements.txt file
+        pip install -r .github/workflows/requirements.txt  # If you have a requirements.txt file
 
     - name: Run Python script
       run: python .github/workflows/bot_qldt_GetUpdate.py  # Replace with the name and path of your Python script
