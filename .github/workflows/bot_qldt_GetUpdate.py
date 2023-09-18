@@ -11,12 +11,11 @@ from gspread.exceptions import APIError
 import math
 import numpy as np
 import asyncio
-import os
 
 # Record the start time
 start_time = time.time()
 #Disable notification of warning can't verify when send request
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning) 
 
 async def source_send_telegram(textMessage):
     import telegram
@@ -171,6 +170,7 @@ API_HEADER = {
 #"vn5701662152 AND vnz000009825 AND vnz000005052 AND vnz000017073 AND vnz000005091 AND vnz000023752 AND vnz000013297 AND vnz000023738 AND vnz000016981 AND vn5800452036 AND vn5700434869 AND vn0101264520 AND vn0102379203"
 payload_ds_KHLCNT = json.dumps([{ "pageSize": 10000,"pageNumber": 0,"query": [{"index": "es-contractor-selection","keyWord":"vn5701662152 AND vnz000009825 AND vnz000005052 AND vnz000017073 AND vnz000005091 AND vnz000023752 AND vnz000013297 AND vnz000023738 AND vnz000016981 AND vn5800452036 AND vn5700434869 AND vn0101264520 AND vn0102379203",
                                             "matchType": "all-1","matchFields": ["planNo","name","investorName","procuringEntityName"],"filters": [{"fieldName": "type","searchType": "in","fieldValues": ["es-plan-project-p"]}]}]}])
+# token_QLDT_GoogleSheet = "token-qldt.json"
 token_QLDT_GoogleSheet = os.environ.get("TOKEN_GOOGLE_SHEET_QLDT")
 if not token_QLDT_GoogleSheet:
     raise RuntimeError("TOKEN_GOOGLE_SHEET_QLDT not found")
@@ -578,7 +578,7 @@ def check_new_TBMT(id_KHLCNT,list_maTBMT):
                                         'TenDonVi': [MAPPING_TENDONVI[str(data_api_KHLCNT_ct['bidpPlanDetailToProjectList'][0]['createdBy']).split("-")[0]]],
                                         'ID_GOITHAU': [data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["id"]],
                                         'planNo': [data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["planNo"]],
-                                        'planID': [data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["planID"]],
+                                        'planID': [data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["planId"]],
                                         'TEN_GOITHAU': [data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["bidName"]],
                                         'TRONGNUOC_QUOCTE': [MAPPING_TRONGNUOC_QUOCTE[data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["isDomestic"]]],
                                         'HINHTHUC_DUTHAU': [MAPPING_HINHTHUC_DUTHAU[data_api_KHLCNT_ct['lsBidpPlanDetailDTO'][j]["isInternet"]]],
@@ -1236,32 +1236,48 @@ def main():
                                                         "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
                                                         "Tên gói thầu: " + str(df_GOITHAU["TEN_GOITHAU"][i]) + '\n' +
                                                         "Ngày đăng tải: " + str(datetime.strptime(str(data_get_by_id['bidNoContractorResponse']['bidNotification']['publicDate']).split(".")[0], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y %H:%M:%S")) + '\n' +
-                                                        "Giá gói thầu: " + str(df_GOITHAU["GIA_GOITHAU"][i]) + '\n' +
+                                                        "Giá gói thầu: " + f"{df_GOITHAU['GIA_GOITHAU'][i]:,}" + ' VNĐ' + '\n' +
                                                         "Thời điểm mở thầu: " + str(data_get_by_id['bidNoContractorResponse']['bidNotification']['bidOpenDate']) + '\n' +
-                                                        "Thời điểm mở thầu: " + str(data_get_by_id['bidNoContractorResponse']['bidNotification']['bidCloseDate'])
+                                                        "Thời điểm mở thầu: " + str(data_get_by_id['bidNoContractorResponse']['bidNotification']['bidCloseDate']) + '\n' +
+                                                        "QĐ phê duyệt HSMT: " + str(data_get_by_id['bidInvContractorOfflineDTO']['decisionNo']) + " (" + str(datetime.strptime(str(data_get_by_id['bidInvContractorOfflineDTO']['decisionDate']).split(".")[0], "%Y-%m-%dT%H:%M:%S").strftime("%d/%m/%Y")) + ")"
                                                         ],
                                         'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
                         df_telegram = pd.concat([df_telegram, pd.DataFrame(data_telegram)], ignore_index=True)
                     elif df_GOITHAU['ACTION'][i] == "CHUYEN_STATUS_TU_01":
-                        THONGTIN_NHATHAU = ""
-                        for row_mothau in range(len(df_new_mothau)):
-                            THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_mothau + 1) + ". " + df_new_mothau["contractorName_final"][row_mothau]
-                        if df_telegram.empty:
-                            telegram_count = 0
+                        if df_GOITHAU["STATUS_BID"][i] == "03":
+                            if df_GOITHAU["STATUS_TBMT"][i] == "06. Đã huỷ thầu" or df_GOITHAU["STATUS_TBMT"][i] == "07. Đã huỷ Thông báo mời thầu":
+                                data_telegram = {
+                                                'No': [telegram_count + 1],
+                                                'TextMessage': ["🌟 ĐÃ HUỶ THẦU 🌟" + '\n' + 
+                                                                "Đơn vị: " + str(df_GOITHAU['TenDonVi'][i]).split(". ")[1] + '\n' +
+                                                                "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
+                                                                "Phân loại huỷ thầu: " + str(HUYTHAU_LOAI) + '\n' +
+                                                                "Ngày huỷ thầu: " + str(HUYTHAU_NGAY) + '\n' +
+                                                                "Lý do huỷ thầu: " + str(HUYTHAU_REASON) + '\n' +
+                                                                "QĐ phê duyệt: " + str(HUYTHAU_SO_QD) + " (" + str(HUYTHAU_NGAY_QD) + ")"
+                                                                ],
+                                                'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
+                                df_telegram = pd.concat([df_telegram, pd.DataFrame(data_telegram)], ignore_index=True)
                         else:
-                            telegram_count = len(df_telegram)
-                        data_telegram = {
-                                        'No': [telegram_count + 1],
-                                        'TextMessage': ["🌟 GÓI THẦU ĐÃ HOÀN THÀNH MỞ THẦU 🌟" + '\n' + 
-                                                        "Đơn vị: " + str(df_GOITHAU['TenDonVi'][i]).split(". ")[1] + '\n' +
-                                                        "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
-                                                        "Tên gói thầu: " + str(df_GOITHAU["TEN_GOITHAU"][i]) + '\n' +
-                                                        "Số lượng nhà thầu tham dự: " + str(df_GOITHAU["numBidderJoin"][i]) + '\n' +
-                                                        "Thời điểm hoàn thành mở thầu: " + str(THOI_DIEM_HOANTHANH_MOTHAU) + '\n' +
-                                                        "Nhà thầu tham gia: " + THONGTIN_NHATHAU
-                                                        ],
-                                        'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
-                        df_telegram = pd.concat([df_telegram, pd.DataFrame(data_telegram)], ignore_index=True)
+                            THONGTIN_NHATHAU = ""
+                            for row_mothau in range(len(df_new_mothau)):
+                                THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_mothau + 1) + ". " + df_new_mothau["contractorName_final"][row_mothau]
+                            if df_telegram.empty:
+                                telegram_count = 0
+                            else:
+                                telegram_count = len(df_telegram)
+                            data_telegram = {
+                                            'No': [telegram_count + 1],
+                                            'TextMessage': ["🌟 GÓI THẦU ĐÃ HOÀN THÀNH MỞ THẦU 🌟" + '\n' + 
+                                                            "Đơn vị: " + str(df_GOITHAU['TenDonVi'][i]).split(". ")[1] + '\n' +
+                                                            "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
+                                                            "Tên gói thầu: " + str(df_GOITHAU["TEN_GOITHAU"][i]) + '\n' +
+                                                            "Số lượng nhà thầu tham dự: " + str(df_GOITHAU["numBidderJoin"][i]) + '\n' +
+                                                            "Thời điểm hoàn thành mở thầu: " + str(THOI_DIEM_HOANTHANH_MOTHAU) + '\n' +
+                                                            "Nhà thầu tham gia: " + THONGTIN_NHATHAU
+                                                            ],
+                                            'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
+                            df_telegram = pd.concat([df_telegram, pd.DataFrame(data_telegram)], ignore_index=True)
                     elif df_GOITHAU['ACTION'][i] == "CHUYEN_STATUS_TU_OPEN_DXKT":
                         THONGTIN_NHATHAU = ""
                         row_count = 0
@@ -1278,7 +1294,7 @@ def main():
                                         'TextMessage': ["🌟 GÓI THẦU ĐÃ HOÀN THÀNH ĐÁNH GIÁ HSĐXKT 🌟" + '\n' + 
                                                         "Đơn vị: " + str(df_GOITHAU['TenDonVi'][i]).split(". ")[1] + '\n' +
                                                         "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
-                                                        "Giá gói thầu: " + str(df_GOITHAU["GIA_GOITHAU"][i]) + '\n' +
+                                                        "Giá gói thầu: " + f"{df_GOITHAU['GIA_GOITHAU'][i]:,}" + ' VNĐ' + '\n' +
                                                         "Kết quả ĐXKT: " + THONGTIN_NHATHAU
                                                         ],
                                         'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
@@ -1291,10 +1307,10 @@ def main():
                                 if df_KQLCNT_new["bidResult"][row_mothau] == 1:
                                     if df_KQLCNT_new["ventureName"][row_mothau] is not None:
                                         if df_KQLCNT_new["ventureName"][row_mothau] not in THONGTIN_NHATHAU:
-                                            THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_count) + ". " + str(df_DXKT_new["ventureName"][row_mothau])
+                                            THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_count) + ". " + str(df_KQLCNT_new["ventureName"][row_mothau])
                                     else:
                                         if df_KQLCNT_new["orgFullname"][row_mothau] not in THONGTIN_NHATHAU:
-                                            THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_count) + ". " + str(df_DXKT_new["orgFullname"][row_mothau])
+                                            THONGTIN_NHATHAU = THONGTIN_NHATHAU + '\n' + str(row_count) + ". " + str(df_KQLCNT_new["orgFullname"][row_mothau])
                             if df_telegram.empty:
                                 telegram_count = 0
                             else:
@@ -1304,8 +1320,8 @@ def main():
                                             'TextMessage': ["🌟 CÓ NHÀ THẦU TRÚNG THẦU 🌟" + '\n' + 
                                                             "Đơn vị: " + str(df_GOITHAU['TenDonVi'][i]).split(". ")[1] + '\n' +
                                                             "Mã TBMT: " + str(df_GOITHAU["MA_TBMT"][i]) + '\n' +
-                                                            "Giá gói thầu: " + str(df_GOITHAU["GIA_GOITHAU"][i]) + '\n' +
-                                                            "Giá trúng thầu: " + str(GIATRUNGTHAU) + '\n' +
+                                                            "Giá gói thầu: " + f"{df_GOITHAU['GIA_GOITHAU'][i]:,}" + ' VNĐ' + '\n' +
+                                                            "Giá trúng thầu: " f"{GIATRUNGTHAU:,}" + ' VNĐ' + '\n' +
                                                             "Kết quả ĐXKT: " + THONGTIN_NHATHAU
                                                             ],
                                             'Date_get_data': [datetime.now().strftime("%Y-%m-%d %H:%M:%S")]}
@@ -1517,11 +1533,12 @@ def main():
             print(message)
         else:
             print(f"Upload failed. Error message: {message}")
-          
-    # #send message to telegram
-    # for i in range(len(df_telegram)):
-    #     send_telegram(df_telegram["TextMessage"][i])
-  
+    
+    #send message to telegram
+    for i in range(len(df_telegram)):
+        send_telegram(df_telegram["TextMessage"][i])
+        time.sleep(1)
+    
     # Record the end time
     end_time = time.time()
     # Calculate the elapsed time in seconds
