@@ -13,11 +13,6 @@ import numpy as np
 import asyncio
 import os
 import telegram
-import sys
-
-#Code de dieu chinh ve dung path folder. de code python chay dung
-script_dir = os.path.dirname(os.path.abspath(__file__))
-os.chdir(script_dir)
 
 #Disable notification of warning can't verify when send request
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -1836,22 +1831,6 @@ def main():
                     }
 
                     df_GOITHAU_ct = pd.concat([df_GOITHAU_ct,pd.DataFrame(data_newRow, index=[0])], ignore_index=True)
-    
-    #EXPORT TO EXCEL    
-    writer = pd.ExcelWriter("/home/pi/Documents/BanQLDT/OUTPUT/output_" + str(datetime.now().strftime("%Y_%m_%d_%H_%M_%S")) + ".xlsx")
-    df_telegram.to_excel(writer, sheet_name='TELEGRAM', index=False)
-    df_ct_khlcnt.to_excel(writer, sheet_name='KHLCNT', index=False)
-    df_GOITHAU.to_excel(writer, sheet_name='GOITHAU', index=False)
-    df_GOITHAU_ct.to_excel(writer, sheet_name='GOITHAU_CHITIET', index=False)
-    df_GIAHAN.to_excel(writer, sheet_name='GIAHAN', index=False)
-    df_lamro.to_excel(writer, sheet_name='LAMRO', index=False)
-    df_kiennghi.to_excel(writer, sheet_name='KIENNGHI', index=False)
-    df_mothau.to_excel(writer, sheet_name='BIENBAN_MOTHAU', index=False)
-    df_DXKT.to_excel(writer, sheet_name='HSDXKT', index=False)
-    df_DXTC.to_excel(writer, sheet_name='HSDXTC', index=False)
-    df_KQLCNT.to_excel(writer, sheet_name='KQLCNT', index=False)
-    df_HANGHOA.to_excel(writer, sheet_name='DANHMUC_HANGHOA', index=False)
-    writer.close()
 
     #UPLOAD TO GOOGLE SHEET
     if not df_ct_khlcnt.empty:
@@ -1933,15 +1912,6 @@ if __name__ == "__main__":
     send_telegram_admin("[GET DATA FROM MUASAMCONG] - Start at: " + str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
     # Record the start time
     start_time = time.time()
-    # Get the current date and time as a string
-    current_datetime = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Create a log filename using the current date and time
-    log_file_path = f"/home/pi/Documents/BanQLDT/LOG/log_qldt_{current_datetime}.log"
-    log_file = open(log_file_path, 'a')
-
-    sys.stdout = log_file
-    sys.stderr = log_file
     try:
         main()
         # Record the end time
@@ -1952,16 +1922,8 @@ if __name__ == "__main__":
         hours, remainder = divmod(elapsed_time, 3600)
         minutes, seconds = divmod(remainder, 60)
         print(f"Tổng thời gian lấy dữ liệu: {int(hours)} hours, {int(minutes)} minutes, {int(seconds)} seconds")
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-        log_file.close()
-        asyncio.run(source_send_file_telegram(log_file_path, chat_id_admin))
         send_telegram_admin("GET DATA FROM MUASAMCONG - Finish at: " + str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + '\n' +
                             "Tổng thời gian lấy dữ liệu: " + str(int(hours)) + "hours, " + str(int(minutes)) + " minutes, " + str(int(seconds)) + " seconds"
                                 )
     except Exception as e:
         print("Error in python code: " + str(e))
-        sys.stdout = sys.__stdout__
-        sys.stderr = sys.__stderr__
-        log_file.close()
-        asyncio.run(source_send_file_telegram(log_file_path, chat_id_admin))
